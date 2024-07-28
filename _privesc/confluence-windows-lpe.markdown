@@ -214,7 +214,7 @@ PS C:\Windows\system32>
 I hope this post demonstrates how a simple ACE misconfiguration in a widely used product can introduce a vulnerability that can allow both privileged application access and local privilege escalation. Devleopers and application deployment teams must ensure that configuration files are protected to prevent unnecessary exposure.
 
 # References
-- [Local Privilege Escalation via Confluence Server - CrowdStream - Bugcrowd](Local Privilege Escalation via Confluence Server - CrowdStream - Bugcrowd)
+- [Local Privilege Escalation via Confluence Server - CrowdStream - Bugcrowd](https://bugcrowd.com/disclosures/a1086522-37fd-4162-89b2-64dec3b05ab2/local-privilege-escalation-via-confluence-server)
 - [PrintSpoofer - Abusing Impersonation Privileges on Windows 10 and Server 2019](https://itm4n.github.io/printspoofer-abusing-impersonate-privileges/)
 - [Atlassian Developer - Password Hash Algorithm](https://developer.atlassian.com/server/confluence/password-hash-algorithm/)
 - [ScriptRunner for Confluence](https://marketplace.atlassian.com/apps/1215215/scriptrunner-for-confluence?tab=overview&hosting=cloud)

@@ -1,25 +1,31 @@
 ---
 layout: post
-title:  "Confluence Server - Local Privilege Escalation via Misconfigured Config File Permissions"
+title:  "CVE-2024-21703 - Confluence Server - Local Privilege Escalation via Misconfigured Config File Permissions"
 date:   2024-07-28
 ---
 # Introduction
-Client-server based applications commonly store secrets used to access backend databases in configuration files or registry keys.
+Client-server based applications commonly store secrets used to access backend components such as databases in configuration files or registry keys.
 
 If these configuration files or registry keys are widely exposed and the server application is running as a privileged user, attack paths can be introduced to escalate privileges with a low privilege host foothold.
 
 # Confluence Server
 
-In 2023, Confluence Server's default installation exposed the `confluence.cfg` file to all members of the local `Users` group. This configuration file contained plaintext database credentials for the applications backend database; anyone with local access to the system could extract these credentials and authenticate to the backend database.
+In 2023, Confluence Server's default installation exposed the `confluence.cfg` file to all members of the local `Users` group. This configuration file contained plaintext database credentials for the applications backend database that anyone with local access to the system could extract and use to authenticate to the backend database.
 
-This configuration introduced an attack path that allowed standard Windows users on hosts with Confluence Server installed to gain privileged access to the Confluence instance and in turn, escalate privileges to `NT AUTHORITY\SYSTEM`.
+For vulnerable installations, this configuration introduces an attack path that allows standard Windows users on hosts with Confluence Server installed to gain privileged access to the Confluence instance and in turn, compromise the underlying server and escalate privileges to `NT AUTHORITY\SYSTEM`.
+
+# Advice for Security Teams
+1. For Confluence Server instances installed prior to the Atlassian fix, remove the ACE on the `confluence.cfg` file that grants wide system access and replace with a suitable ACE that provides only the Confluence service access.
+2. Monitor for connections to the Confluence Server backend database from non-Confluence hosts and processes.
+3. Configure the Confluence Server service to run as a dedicated account with least privileges configured - see [https://confluence.atlassian.com/doc/creating-a-dedicated-user-account-on-the-operating-system-to-run-confluence-255362445.html](https://confluence.atlassian.com/doc/creating-a-dedicated-user-account-on-the-operating-system-to-run-confluence-255362445.html).
+4. Configure advanced encryption for `confluence.cfg` secrets - see [https://confluence.atlassian.com/doc/advanced-encryption-1115674741.html](https://confluence.atlassian.com/doc/advanced-encryption-1115674741.html).
 
 # Exposed Configuration File
 By default, the `confluence.cfg` file is located in `C:\Program Files\Atlassian\Application Data\Confluence`.
 
 ![Default permissions configured for confluence.cfg.]({{ '/assets/images/confluence-cfg-perms.png' | relative_url }})
 
-As shown above, the local `Users` group had Access Control Entries configured that allowed read and execute privileges.
+As shown above, the local `Users` group had Access Control Entries (ACEs) configured that allowed read and execute privileges.
 
 As shown below, the contents of this file contained cleartext credentials for the backend DBMS.
 ![Properties within the file contained cleartext database credentials]({{ '/assets/images/confluence-cfg-contents.png' | relative_url }})
@@ -204,14 +210,8 @@ nt authority\system
 PS C:\Windows\system32>
 ```
 
-# Security Team Advice
-1. For Confluence Server instances installed prior to the Atlassian fix, remove the ACE on the `confluence.cfg` file that grants wide system access.
-2. Monitor for connections to the Confluence Server backend database from non-Confluence hosts and processes.
-3. Configure the Confluence Server service to run as a dedicated account with least privileges configured - see [https://confluence.atlassian.com/doc/creating-a-dedicated-user-account-on-the-operating-system-to-run-confluence-255362445.html](https://confluence.atlassian.com/doc/creating-a-dedicated-user-account-on-the-operating-system-to-run-confluence-255362445.html).
-4. Configure advanced encryption for `confluence.cfg` secrets - see [https://confluence.atlassian.com/doc/advanced-encryption-1115674741.html](https://confluence.atlassian.com/doc/advanced-encryption-1115674741.html).
-
 # Conclusion
-I hope this post demonstrates how a simple ACE misconfiguration in a widely used product can introduce a vulnerability that can allow both privileged application access and local privilege escalation. Devleopers and application deployment teams must ensure that configuration files are protected to prevent unnecessary exposure.
+I hope this post demonstrates how a simple ACE misconfiguration in a widely used product can introduce a vulnerability that can allow both privileged application access and local privilege escalation. Developers and application deployment teams must ensure that configuration files are protected to prevent unnecessary exposure.
 
 # References
 - [Local Privilege Escalation via Confluence Server - CrowdStream - Bugcrowd](https://bugcrowd.com/disclosures/a1086522-37fd-4162-89b2-64dec3b05ab2/local-privilege-escalation-via-confluence-server)
@@ -219,4 +219,4 @@ I hope this post demonstrates how a simple ACE misconfiguration in a widely used
 - [Atlassian Developer - Password Hash Algorithm](https://developer.atlassian.com/server/confluence/password-hash-algorithm/)
 - [ScriptRunner for Confluence](https://marketplace.atlassian.com/apps/1215215/scriptrunner-for-confluence?tab=overview&hosting=cloud)
 - [Confluence Support - Creating a Dedicated User Account on the Operating System to Run Confluence](https://confluence.atlassian.com/doc/creating-a-dedicated-user-account-on-the-operating-system-to-run-confluence-255362445.html)
-- [Confluence Support - AES Esncryption](https://confluence.atlassian.com/doc/advanced-encryption-1115674741.html)
+- [Confluence Support - AES Encryption](https://confluence.atlassian.com/doc/advanced-encryption-1115674741.html)
